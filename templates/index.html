@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="text-center py-5">
+    <h1>Welcome to Medicore</h1>
+    <p class="lead">A simple hospital management demo.</p>
+    <p><a class="btn btn-primary" href="{{ url_for('login') }}">Login</a></p>
+    <footer class="mt-5">&copy; {{current_year}} Medicore</footer>
+  </div>
+{% endblock %}

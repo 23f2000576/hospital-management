@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicore Register</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: url("../static/images/achieve-png.png") no-repeat center/cover;
+      background-size: contain;
+      background-color: #e8f5e9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 40px;
+    }
+    .register-box {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      width: 420px;
+      text-align: center;
+      animation: fadeIn 1.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1 {
+      color: #0d6b3b;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .btn-register {
+      background-color: #0d6b3b;
+      color: white;
+      font-weight: bold;
+      width: 100%;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .btn-register:hover {
+      background-color: #09964c;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="register-box">
+    <h1>Register</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <input type="text" name="name" class="form-control" placeholder="First Name" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <input type="text" name="surname" class="form-control" placeholder="Last Name" required>
+        </div>
+      </div>
+      <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email" required>
+      </div>
+      <div class="mb-3">
+        <input type="text" name="address" class="form-control" placeholder="Address" required>
+      </div>
+      <div class="mb-3">
+        <input type="text" name="username" class="form-control" placeholder="Username" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" name="password" class="form-control" placeholder="Password" required>
+      </div>
+      <div class="mb-3">
+        <select name="user_type" class="form-select" required>
+          <option value="">Select User Type</option>
+          <option value="Patient">Patient</option>
+          <option value="Doctor">Doctor</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-register">Register</button>
+    </form>
+
+    <p class="mt-3">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+  </div>
+</body>
+</html>
