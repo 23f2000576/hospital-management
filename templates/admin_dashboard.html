@@ -74,35 +74,35 @@
     </table>
 
     <!-- Registered Patients -->
-    <h4 class="section-title">Registered Patients</h4>
-    <table class="table table-bordered">
-      <thead class="table-success">
-        <tr>
-          <th>ID</th>
-          <th>User ID</th>
-          <th>Age</th>
-          <th>Gender</th>
-          <th>Department</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for patient in patients %}
-        <tr>
-          <td>{{ patient[0] }}</td>
-          <td>{{ patient[1] }}</td>
-          <td>{{ patient[2] }}</td>
-          <td>{{ patient[3] }}</td>
-          <td>{{ patient[4] }}</td>
-          <td>
-            <form method="POST" action="{{ url_for('delete_patient', patient_id=patient[0]) }}" style="display:inline;">
-              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+   <h4 class="section-title">Registered Patients</h4>
+<table class="table table-bordered">
+  <thead class="table-success">
+    <tr>
+      <th>ID</th>
+      <th>Full Name</th>
+      <th>Email</th>
+      <th>Username</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in patients %}
+    <tr>
+      <td>{{ p[0] }}</td>
+      <td>{{ p[1] }} {{ p[2] }}</td>
+      <td>{{ p[3] }}</td>
+      <td>{{ p[4] }}</td>
+
+      <td>
+        <form method="POST" action="{{ url_for('delete_patient', user_id=p[0]) }}"
+ style="display:inline;">
+          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
     <!-- Appointments -->
     <h4 class="section-title">Upcoming Appointments</h4>

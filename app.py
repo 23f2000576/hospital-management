@@ -203,7 +203,11 @@ def admin_dashboard():
     if search_query:
         c.execute("SELECT * FROM patients WHERE LOWER(department) LIKE ?", (f"%{search_query}%",))
     else:
-        c.execute("SELECT * FROM patients")
+        c.execute("""
+        SELECT id, name, surname, email, username 
+        FROM users 
+        WHERE user_type='Patient'
+    """)
     patients = c.fetchall()
 
     if search_query:
@@ -237,32 +241,56 @@ def doctor_dashboard(doctor_name):
 # ---------------- Patient Dashboard (new) ----------------
 @app.route('/patient_dashboard/<patient_username>')
 def patient_dashboard(patient_username):
-    # gather patient summary, upcoming appointments and departments
-    # patient name: look up users table
-    user = query_db("SELECT name, surname, username, email FROM users WHERE username=? AND user_type='Patient'", (patient_username,), one=True)
+
+    # -------- Fetch patient user information --------
+    user = query_db("""
+        SELECT name, surname, username, email, address, password
+        FROM users 
+        WHERE username=? AND user_type='Patient'
+    """, (patient_username,), one=True)
+
     if not user:
-        # if not found, still show basic welcome with username
         display_name = patient_username
+        user_data = ("", "", "", "", "")
     else:
-        display_name = f"{user[0]} {user[1]}" if user[0] or user[1] else user[2]
+        name, surname, username, email, address, password = user
+        # Prepare display name
+        display_name = f"{name} {surname}".strip() or username
+        # Data to use in Edit Profile form
+        user_data = (name, surname, email, address, password)
 
-    # upcoming appointments for this patient
-    appointments = query_db("SELECT id, doctor_name, department, date, time FROM appointments WHERE patient_name=? ORDER BY date", (display_name,))
+    # -------- Fetch upcoming appointments --------
+    appointments = query_db("""
+        SELECT id, doctor_name, department, date, time 
+        FROM appointments 
+        WHERE patient_name=? 
+        ORDER BY date
+    """, (display_name,))
 
-    # departments list (distinct departments from doctors)
-    departments = query_db("SELECT DISTINCT department FROM doctors WHERE department IS NOT NULL")
+    # -------- Fetch distinct departments --------
+    departments = query_db("""
+        SELECT DISTINCT department 
+        FROM doctors 
+        WHERE department IS NOT NULL
+    """)
 
-    # all doctors for listing (id, fullname, department)
-    doctors = query_db("SELECT id, fullname, department, experience FROM doctors ORDER BY department, fullname")
+    # -------- Fetch doctors list --------
+    doctors = query_db("""
+        SELECT id, fullname, department, experience 
+        FROM doctors 
+        ORDER BY department, fullname
+    """)
 
-    return render_template('patients_dashboard.html',
-                           patient_username=patient_username,
-                           display_name=display_name,
-                           appointments=appointments,
-                           departments=[d[0] for d in departments],
-                           doctors=doctors)
-
-
+    # -------- Render template with all data --------
+    return render_template(
+        'patients_dashboard.html',
+        patient_username=patient_username,
+        display_name=display_name,
+        appointments=appointments,
+        departments=[d[0] for d in departments],
+        doctors=doctors,
+        user_data=user_data
+    )
 # ---------------- Patient actions: book, cancel, history AJAX ----------------
 @app.route('/get_patient_history/<patient_name>')
 def get_patient_history(patient_name):
@@ -492,9 +520,15 @@ def delete_doctor(doctor_id):
     conn.close()
     flash("Doctor deleted successfully!", "success")
     return redirect(url_for('admin_dashboard'))
-@app.route('/delete_patient/<int:patient_id>', methods=['POST'])
-def delete_patient(patient_id):
-    execute_db("DELETE FROM patients WHERE id=?", (patient_id,))
+
+@app.route('/delete_patient/<int:user_id>', methods=['POST'])
+def delete_patient(user_id):
+    # delete from patients table (optional)
+    execute_db("DELETE FROM patients WHERE user_id=?", (user_id,))
+
+    # delete from users table
+    execute_db("DELETE FROM users WHERE id=?", (user_id,))
+
     flash("Patient deleted successfully.", "success")
     return redirect(url_for('admin_dashboard'))
 
@@ -526,6 +560,23 @@ def update_patient_history():
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", data)
     flash("Patient history updated successfully!", "success")
     return redirect(request.referrer or url_for('doctor_dashboard', doctor_name=doctor_name))
+
+@app.route('/update_patient_profile/<username>', methods=['POST'])
+def update_patient_profile(username):
+    name = request.form.get('name')
+    surname = request.form.get('surname')
+    email = request.form.get('email')
+    address = request.form.get('address')
+    password = request.form.get('password')
+
+    execute_db("""
+        UPDATE users 
+        SET name=?, surname=?, email=?, address=?, password=?
+        WHERE username=? AND user_type='Patient'
+    """, (name, surname, email, address, password, username))
+
+    flash("Profile updated successfully!", "success")
+    return redirect(url_for('patient_dashboard', patient_username=username))
 
 
 # ------------- Run app -------------
